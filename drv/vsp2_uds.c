@@ -170,8 +170,8 @@ static int uds_s_stream(struct v4l2_subdev *subdev, int enable)
 	vsp_uds->complement = multitap ? VSP_COMPLEMENT_BC : VSP_COMPLEMENT_BIL;
 
 	/* Set the scaling ratios and the output size. */
-	vsp_uds->x_ratio	= vscale;
-	vsp_uds->y_ratio	= hscale;
+	vsp_uds->x_ratio	= hscale;
+	vsp_uds->y_ratio	= vscale;
 	vsp_uds->out_cwidth	= output->width;
 	vsp_uds->out_cheight	= output->height;
 
