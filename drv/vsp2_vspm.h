@@ -69,6 +69,9 @@
 #include "vsp2.h"
 #include "vspm_public.h"
 
+#define VSP2_VSPM_JOB_PRI_0	(VSPM_PRI_MAX)		/* for vsp2.0 */
+#define VSP2_VSPM_JOB_PRI_1	(VSPM_PRI_MAX)		/* for vsp2.1 */
+
 struct vsp2_vspm_entry_work {
 	struct work_struct work;
 	struct vsp2_device *vsp2;
@@ -77,11 +80,12 @@ struct vsp2_vspm_entry_work {
 struct vsp2_vspm {
 	unsigned long hdl;
 	unsigned long job_id;
+	char job_pri;
 	VSPM_IP_PAR ip_par;
 	struct vsp2_vspm_entry_work entry_work;
 };
 
-int vsp2_vspm_init(struct vsp2_device *vsp2);
+int vsp2_vspm_init(struct vsp2_device *vsp2, int dev_id);
 void vsp2_vspm_param_init(VSPM_IP_PAR *par);
 
 long vsp2_vspm_drv_init(struct vsp2_device *vsp2);

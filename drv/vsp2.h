@@ -83,6 +83,9 @@ struct vsp2_vspm;
 #define DEVNAME			"vsp2"
 #define DRVNAME			DEVNAME
 
+#define DEVID_0			0
+#define DEVID_1			1
+
 #define VSP2_COUNT_RPF		4
 #define VSP2_COUNT_UDS		1
 #define VSP2_COUNT_WPF		1

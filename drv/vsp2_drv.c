@@ -413,7 +413,7 @@ static int vsp2_probe(struct platform_device *pdev)
 		return ret;
 	}
 
-	ret = vsp2_vspm_init(vsp2);
+	ret = vsp2_vspm_init(vsp2, pdev->id);
 	if (ret < 0) {
 		dev_err(&pdev->dev, "failed to initialize VSPM info\n");
 		return ret;
@@ -448,40 +448,59 @@ static void vsp2_dev_release(struct device *dev)
 	return;
 }
 
-static struct platform_device vsp2_device = {
-	.name		= DEVNAME,
-	.id		= 0,
-	.dev		= {
-				.coherent_dma_mask = ~0,
-				.release = vsp2_dev_release,
-			},
+static struct platform_device vsp2_devices[] = {
+	{
+		.name		= DEVNAME,
+		.id		= DEVID_0,
+		.dev		= {
+					.coherent_dma_mask = ~0,
+					.release = vsp2_dev_release,
+				},
+	},
+	{
+		.name		= DEVNAME,
+		.id		= DEVID_1,
+		.dev		= {
+					.coherent_dma_mask = ~0,
+					.release = vsp2_dev_release,
+				},
+	},
 };
 
 static int __init vsp2_init(void)
 {
 	int ercd = 0;
+	unsigned int i = 0;
+	unsigned int unreg_num = 0;
 
-	ercd = platform_device_register(&vsp2_device);
-	if (ercd)
-		goto err_exit1;
+	for (i = 0; i < ARRAY_SIZE(vsp2_devices); i++) {
+		ercd = platform_device_register(&vsp2_devices[i]);
+		if (ercd)
+			goto err_exit;
+	}
 
 	ercd = platform_driver_register(&vsp2_driver);
 	if (ercd)
-		goto err_exit2;
+		goto err_exit;
 
 	return ercd;
 
-err_exit2:
-	platform_device_unregister(&vsp2_device);
-err_exit1:
+err_exit:
+	unreg_num = i;
+	for (i = 0; i < unreg_num; i++)
+		platform_device_unregister(&vsp2_devices[i]);
+
 	return ercd;
 }
 
 static void __exit vsp2_exit(void)
 {
+	unsigned int i = 0;
+
 	platform_driver_unregister(&vsp2_driver);
 
-	platform_device_unregister(&vsp2_device);
+	for (i = 0; i < ARRAY_SIZE(vsp2_devices); i++)
+		platform_device_unregister(&vsp2_devices[i]);
 }
 
 module_init(vsp2_init);

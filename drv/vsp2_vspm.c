@@ -62,8 +62,6 @@
 #include "vsp2.h"
 #include "vsp2_vspm.h"
 
-#define VSP2_VSPM_JOB_PRI	(VSPM_PRI_MAX)
-
 void vsp2_vspm_param_init(VSPM_IP_PAR *par)
 {
 	VSPM_VSP_PAR *vsp_par = par->unionIpParam.ptVsp;
@@ -357,7 +355,7 @@ void vsp2_vspm_drv_entry_work(struct work_struct *work)
 	}
 
 	ret = VSPM_lib_Entry(vsp2->vspm->hdl, &vsp2->vspm->job_id,
-			     VSP2_VSPM_JOB_PRI, &vsp2->vspm->ip_par,
+			     vsp2->vspm->job_pri, &vsp2->vspm->ip_par,
 			     (unsigned long)vsp2, vsp2_vspm_drv_entry_cb);
 	if (ret != R_VSPM_OK) {
 		dev_err(vsp2->dev, "failed to VSPM_lib_Entry : %ld\n", ret);
@@ -387,7 +385,7 @@ static void vsp2_vspm_work_queue_init(struct vsp2_device *vsp2)
 	return;
 }
 
-int vsp2_vspm_init(struct vsp2_device *vsp2)
+int vsp2_vspm_init(struct vsp2_device *vsp2, int dev_id)
 {
 	int ret = 0;
 
@@ -400,6 +398,10 @@ int vsp2_vspm_init(struct vsp2_device *vsp2)
 
 	/* Initialize the parameters to VSPM driver. */
 	vsp2_vspm_param_init(&vsp2->vspm->ip_par);
+
+	/* Set the VSPM job priority. */
+	vsp2->vspm->job_pri = (dev_id == DEVID_1) ? VSP2_VSPM_JOB_PRI_1
+						  : VSP2_VSPM_JOB_PRI_0;
 
 	return 0;
 }
