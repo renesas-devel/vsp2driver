@@ -89,7 +89,8 @@ static int bru_s_ctrl(struct v4l2_ctrl *ctrl)
 
 	switch (ctrl->id) {
 	case V4L2_CID_BG_COLOR:
-		vsp_bru->blend_virtual->color = ctrl->val;
+		vsp_bru->blend_virtual->color =
+			ctrl->val | (0xff << VI6_BRU_VIRRPF_COL_A_SHIFT);
 		break;
 	}
 
