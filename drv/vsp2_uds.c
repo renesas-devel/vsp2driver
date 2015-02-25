@@ -164,7 +164,7 @@ static int uds_s_stream(struct v4l2_subdev *subdev, int enable)
 		multitap = true;
 
 	vsp_uds->amd = VSP_AMD_NO;
-	vsp_uds->fmd = VSP_FMD;
+	vsp_uds->fmd = VSP_FMD_NO;
 	vsp_uds->clip = VSP_CLIP_OFF;
 	vsp_uds->alpha = uds->scale_alpha ? VSP_ALPHA_ON : VSP_ALPHA_OFF;
 	vsp_uds->complement = multitap ? VSP_COMPLEMENT_BC : VSP_COMPLEMENT_BIL;
