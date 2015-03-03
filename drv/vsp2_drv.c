@@ -74,6 +74,8 @@
 #include "vsp2_uds.h"
 #include "vsp2_vspm.h"
 
+#define VSP2_PRINT_ALERT(fmt, args...) \
+	pr_alert("vsp2:%d: " fmt, current->pid, ##args)
 
 void vsp2_frame_end(struct vsp2_device *vsp2)
 {
@@ -475,13 +477,20 @@ static int __init vsp2_init(void)
 
 	for (i = 0; i < ARRAY_SIZE(vsp2_devices); i++) {
 		ercd = platform_device_register(&vsp2_devices[i]);
-		if (ercd)
+		if (ercd) {
+			VSP2_PRINT_ALERT(
+			    "failed to add a platform-level device : %s.%d\n",
+			    vsp2_devices[i].name,  vsp2_devices[i].id);
 			goto err_exit;
+		}
 	}
 
 	ercd = platform_driver_register(&vsp2_driver);
-	if (ercd)
+	if (ercd) {
+		VSP2_PRINT_ALERT(
+		  "failed to register a driver for platform-level devices.\n");
 		goto err_exit;
+	}
 
 	return ercd;
 
