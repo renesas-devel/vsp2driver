@@ -406,16 +406,16 @@ static int vsp2_probe(struct platform_device *pdev)
 	mutex_init(&vsp2->lock);
 	INIT_LIST_HEAD(&vsp2->entities);
 
+	ret = vsp2_vspm_init(vsp2, pdev->id);
+	if (ret < 0) {
+		dev_err(&pdev->dev, "failed to initialize VSPM info\n");
+		return ret;
+	}
+
 	/* Instanciate entities */
 	ret = vsp2_create_entities(vsp2);
 	if (ret < 0) {
 		dev_err(&pdev->dev, "failed to create entities\n");
-		return ret;
-	}
-
-	ret = vsp2_vspm_init(vsp2, pdev->id);
-	if (ret < 0) {
-		dev_err(&pdev->dev, "failed to initialize VSPM info\n");
 		return ret;
 	}
 
