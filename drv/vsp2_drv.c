@@ -273,7 +273,7 @@ static int vsp2_device_init(struct vsp2_device *vsp2)
 		dev_err(vsp2->dev,
 			"failed to initialize the VSPM driver : %ld\n",
 			vspm_ret);
-		return (int)vspm_ret;
+		return -EFAULT;
 	}
 
 	return 0;
