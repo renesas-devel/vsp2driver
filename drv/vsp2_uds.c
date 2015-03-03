@@ -68,8 +68,10 @@
 #include "vsp2_uds.h"
 #include "vsp2_vspm.h"
 
-#define UDS_MIN_SIZE				4U
-#define UDS_MAX_SIZE				8190U
+#define UDS_IN_MIN_SIZE				4U
+#define UDS_IN_MAX_SIZE				8190U
+#define UDS_OUT_MIN_SIZE			4U
+#define UDS_OUT_MAX_SIZE			2048U
 
 #define UDS_MIN_FACTOR				0x0100
 #define UDS_MAX_FACTOR				0xffff
@@ -119,8 +121,10 @@ static unsigned int uds_output_size(unsigned int input, unsigned int ratio)
 static void uds_output_limits(unsigned int input,
 			      unsigned int *minimum, unsigned int *maximum)
 {
-	*minimum = max(uds_output_size(input, UDS_MAX_FACTOR), UDS_MIN_SIZE);
-	*maximum = min(uds_output_size(input, UDS_MIN_FACTOR), UDS_MAX_SIZE);
+	*minimum = max(uds_output_size(input, UDS_MAX_FACTOR),
+		       UDS_OUT_MIN_SIZE);
+	*maximum = min(uds_output_size(input, UDS_MIN_FACTOR),
+		       UDS_OUT_MAX_SIZE);
 }
 
 static unsigned int uds_compute_ratio(unsigned int input, unsigned int output)
@@ -228,10 +232,10 @@ static int uds_enum_frame_size(struct v4l2_subdev *subdev,
 		return -EINVAL;
 
 	if (fse->pad == UDS_PAD_SINK) {
-		fse->min_width = UDS_MIN_SIZE;
-		fse->max_width = UDS_MAX_SIZE;
-		fse->min_height = UDS_MIN_SIZE;
-		fse->max_height = UDS_MAX_SIZE;
+		fse->min_width = UDS_IN_MIN_SIZE;
+		fse->max_width = UDS_IN_MAX_SIZE;
+		fse->min_height = UDS_IN_MIN_SIZE;
+		fse->max_height = UDS_IN_MAX_SIZE;
 	} else {
 		uds_output_limits(format->width, &fse->min_width,
 				  &fse->max_width);
@@ -268,8 +272,10 @@ static void uds_try_format(struct vsp2_uds *uds, struct v4l2_subdev_fh *fh,
 		    fmt->code != V4L2_MBUS_FMT_AYUV8_1X32)
 			fmt->code = V4L2_MBUS_FMT_AYUV8_1X32;
 
-		fmt->width = clamp(fmt->width, UDS_MIN_SIZE, UDS_MAX_SIZE);
-		fmt->height = clamp(fmt->height, UDS_MIN_SIZE, UDS_MAX_SIZE);
+		fmt->width = clamp(fmt->width, UDS_IN_MIN_SIZE,
+				   UDS_IN_MAX_SIZE);
+		fmt->height = clamp(fmt->height, UDS_IN_MIN_SIZE,
+				    UDS_IN_MAX_SIZE);
 		break;
 
 	case UDS_PAD_SOURCE:
