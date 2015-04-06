@@ -1,0 +1,11 @@
+Module.symvers
+modules.order
+.*.cmd
+*.o
+*.mod
+
+*~
+*.bak
+*.swp
+*.orig
+*.rej
