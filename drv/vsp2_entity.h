@@ -1,7 +1,7 @@
 /*************************************************************************/ /*
  VSP2
 
- Copyright (C) 2015 Renesas Electronics Corporation
+ Copyright (C) 2015-2016 Renesas Electronics Corporation
 
  License        Dual MIT/GPLv2
 
@@ -63,7 +63,7 @@
 #define __VSP2_ENTITY_H__
 
 #include <linux/list.h>
-#include <linux/mutex.h>
+#include <linux/spinlock.h>
 
 #include <media/v4l2-subdev.h>
 
@@ -117,7 +117,7 @@ struct vsp2_entity {
 
 	struct vsp2_video *video;
 
-	struct mutex lock;		/* Protects the streaming field */
+	spinlock_t lock;		/* Protects the streaming field */
 	bool streaming;
 };
 
