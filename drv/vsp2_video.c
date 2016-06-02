@@ -293,7 +293,7 @@ static int __vsp2_video_try_format(struct vsp2_video *video,
 	pix->height = clamp(height, VSP2_VIDEO_MIN_HEIGHT,
 			    VSP2_VIDEO_MAX_HEIGHT);
 
-	for (i = 0; i < max(info->planes, 2U); ++i) {
+	for (i = 0; i < min(info->planes, 2U); ++i) {
 		unsigned int hsub = i > 0 ? info->hsub : 1;
 		unsigned int vsub = i > 0 ? info->vsub : 1;
 		unsigned int bpl;
