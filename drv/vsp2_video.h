@@ -1,7 +1,7 @@
 /*************************************************************************/ /*
  VSP2
 
- Copyright (C) 2015 Renesas Electronics Corporation
+ Copyright (C) 2015-2016 Renesas Electronics Corporation
 
  License        Dual MIT/GPLv2
 
@@ -198,8 +198,5 @@ void vsp2_pipeline_frame_end(struct vsp2_pipeline *pipe);
 void vsp2_pipeline_propagate_alpha(struct vsp2_pipeline *pipe,
 				   struct vsp2_entity *input,
 				   unsigned int alpha);
-
-int vsp2_pipeline_suspend(struct vsp2_pipeline *pipe);
-void vsp2_pipeline_resume(struct vsp2_pipeline *pipe);
 
 #endif /* __VSP2_VIDEO_H__ */

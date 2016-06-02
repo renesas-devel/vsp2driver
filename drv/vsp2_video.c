@@ -1,7 +1,7 @@
 /*************************************************************************/ /*
  VSP2
 
- Copyright (C) 2015 Renesas Electronics Corporation
+ Copyright (C) 2015-2016 Renesas Electronics Corporation
 
  License        Dual MIT/GPLv2
 
@@ -691,35 +691,6 @@ void vsp2_pipeline_frame_end(struct vsp2_pipeline *pipe)
 
 done:
 	spin_unlock_irqrestore(&pipe->irqlock, flags);
-}
-
-int vsp2_pipeline_suspend(struct vsp2_pipeline *pipe)
-{
-	unsigned long flags;
-	int ret;
-
-	if (pipe == NULL)
-		return 0;
-
-	spin_lock_irqsave(&pipe->irqlock, flags);
-	if (pipe->state == VSP2_PIPELINE_RUNNING)
-		pipe->state = VSP2_PIPELINE_STOPPING;
-	spin_unlock_irqrestore(&pipe->irqlock, flags);
-
-	ret = wait_event_timeout(pipe->wq, pipe->state == VSP2_PIPELINE_STOPPED,
-				 msecs_to_jiffies(500));
-	ret = ret == 0 ? -ETIMEDOUT : 0;
-
-	return ret;
-}
-
-void vsp2_pipeline_resume(struct vsp2_pipeline *pipe)
-{
-	if (pipe == NULL)
-		return;
-
-	if (vsp2_pipeline_ready(pipe))
-		vsp2_pipeline_run(pipe);
 }
 
 /*
