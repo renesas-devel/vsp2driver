@@ -559,6 +559,18 @@ static void vsp2_pipeline_run(struct vsp2_pipeline *pipe)
 	pipe->buffers_ready = 0;
 }
 
+bool vsp2_pipeline_stopped(struct vsp2_pipeline *pipe)
+{
+	unsigned long flags;
+	bool stopped;
+
+	spin_lock_irqsave(&pipe->irqlock, flags);
+	stopped = pipe->state == VSP2_PIPELINE_STOPPED,
+	spin_unlock_irqrestore(&pipe->irqlock, flags);
+
+	return stopped;
+}
+
 static int vsp2_pipeline_stop(struct vsp2_pipeline *pipe)
 {
 	struct vsp2_entity *entity;
@@ -570,7 +582,7 @@ static int vsp2_pipeline_stop(struct vsp2_pipeline *pipe)
 		pipe->state = VSP2_PIPELINE_STOPPING;
 	spin_unlock_irqrestore(&pipe->irqlock, flags);
 
-	ret = wait_event_timeout(pipe->wq, pipe->state == VSP2_PIPELINE_STOPPED,
+	ret = wait_event_timeout(pipe->wq, vsp2_pipeline_stopped(pipe),
 				 msecs_to_jiffies(500));
 	ret = ret == 0 ? -ETIMEDOUT : 0;
 
@@ -773,8 +785,7 @@ void vsp2_pipelines_suspend(struct vsp2_device *vsp2)
 		if (pipe == NULL)
 			continue;
 
-		ret = wait_event_timeout(pipe->wq,
-					 pipe->state == VSP2_PIPELINE_STOPPED,
+		ret = wait_event_timeout(pipe->wq, vsp2_pipeline_stopped(pipe),
 					 msecs_to_jiffies(500));
 		if (ret == 0)
 			dev_warn(vsp2->dev, "pipeline %u stop timeout\n",
