@@ -735,6 +735,74 @@ void vsp2_pipeline_propagate_alpha(struct vsp2_pipeline *pipe,
 	}
 }
 
+void vsp2_pipelines_suspend(struct vsp2_device *vsp2)
+{
+	unsigned long flags;
+	unsigned int i;
+	int ret;
+
+	/* To avoid increasing the system suspend time needlessly, loop over the
+	 * pipelines twice, first to set them all to the stopping state, and then
+	 * to wait for the stop to complete.
+	 */
+	for (i = 0; i < VSP2_COUNT_WPF; ++i) {
+		struct vsp2_rwpf *wpf = vsp2->wpf[i];
+		struct vsp2_pipeline *pipe;
+
+		if (wpf == NULL)
+			continue;
+
+		pipe = to_vsp2_pipeline(&wpf->entity.subdev.entity);
+		if (pipe == NULL)
+			continue;
+
+		spin_lock_irqsave(&pipe->irqlock, flags);
+		if (pipe->state == VSP2_PIPELINE_RUNNING)
+			pipe->state = VSP2_PIPELINE_STOPPING;
+		spin_unlock_irqrestore(&pipe->irqlock, flags);
+	}
+
+	for (i = 0; i < VSP2_COUNT_WPF; ++i) {
+		struct vsp2_rwpf *wpf = vsp2->wpf[i];
+		struct vsp2_pipeline *pipe;
+
+		if (wpf == NULL)
+			continue;
+
+		pipe = to_vsp2_pipeline(&wpf->entity.subdev.entity);
+		if (pipe == NULL)
+			continue;
+
+		ret = wait_event_timeout(pipe->wq,
+					 pipe->state == VSP2_PIPELINE_STOPPED,
+					 msecs_to_jiffies(500));
+		if (ret == 0)
+			dev_warn(vsp2->dev, "pipeline %u stop timeout\n",
+				 wpf->entity.index);
+	}
+}
+
+void vsp2_pipelines_resume(struct vsp2_device *vsp2)
+{
+	unsigned int i;
+
+	/* Resume pipeline all running pipelines. */
+	for (i = 0; i < VSP2_COUNT_WPF; ++i) {
+		struct vsp2_rwpf *wpf = vsp2->wpf[i];
+		struct vsp2_pipeline *pipe;
+
+		if (wpf == NULL)
+			continue;
+
+		pipe = to_vsp2_pipeline(&wpf->entity.subdev.entity);
+		if (pipe == NULL)
+			continue;
+
+		if (vsp2_pipeline_ready(pipe))
+			vsp2_pipeline_run(pipe);
+	}
+}
+
 /* -----------------------------------------------------------------------------
  * videobuf2 Queue Operations
  */

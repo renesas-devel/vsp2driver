@@ -346,6 +346,8 @@ static int vsp2_pm_suspend(struct device *dev)
 	if (vsp2->ref_count == 0)
 		return 0;
 
+	vsp2_pipelines_suspend(vsp2);
+
 	return 0;
 }
 
@@ -355,8 +357,10 @@ static int vsp2_pm_resume(struct device *dev)
 
 	WARN_ON(mutex_is_locked(&vsp2->lock));
 
-	if (vsp2->ref_count)
+	if (vsp2->ref_count == 0)
 		return 0;
+
+	vsp2_pipelines_resume(vsp2);
 
 	return 0;
 }
