@@ -559,7 +559,7 @@ static void vsp2_pipeline_run(struct vsp2_pipeline *pipe)
 	pipe->buffers_ready = 0;
 }
 
-bool vsp2_pipeline_stopped(struct vsp2_pipeline *pipe)
+static bool vsp2_pipeline_stopped(struct vsp2_pipeline *pipe)
 {
 	unsigned long flags;
 	bool stopped;
