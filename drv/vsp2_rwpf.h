@@ -87,6 +87,8 @@ struct vsp2_rwpf {
 	} location;
 	struct v4l2_rect crop;
 
+	unsigned int alpha;
+
 	unsigned int offsets[2];
 	dma_addr_t buf_addr[3];
 };

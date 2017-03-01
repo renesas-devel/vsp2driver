@@ -124,6 +124,7 @@ static int rpf_s_ctrl(struct v4l2_ctrl *ctrl)
 
 		pipe = to_vsp2_pipeline(&rpf->entity.subdev.entity);
 		vsp2_pipeline_propagate_alpha(pipe, &rpf->entity, ctrl->val);
+		rpf->alpha = ctrl->val;
 		break;
 	}
 
@@ -144,6 +145,7 @@ static int rpf_s_stream(struct v4l2_subdev *subdev, int enable)
 	const struct vsp2_format_info *fmtinfo = rpf->video.fmtinfo;
 	const struct v4l2_pix_format_mplane *format = &rpf->video.format;
 	const struct v4l2_rect *crop = &rpf->crop;
+	struct vsp2_pipeline *pipe;
 	u32 infmt;
 	int ret;
 	u32 stride_y = 0;
@@ -189,22 +191,20 @@ static int rpf_s_stream(struct v4l2_subdev *subdev, int enable)
 	rpf->offsets[0] = crop->top * stride_y
 			+ crop->left * fmtinfo->bpp[0] / 8;
 
-	vsp_in->addr = (void *)((unsigned long)rpf->buf_addr[0]
-					     + rpf->offsets[0]);
-
 	if (format->num_planes > 1) {
 		rpf->offsets[1] = crop->top * stride_c / fmtinfo->vsub
 				+ crop->left * fmtinfo->bpp[1] / fmtinfo->hsub
 				/ 8;
-
-		vsp_in->addr_c0 = (void *)((unsigned long)rpf->buf_addr[1]
-							+ rpf->offsets[1]);
-
-		if (format->num_planes > 2)
-			vsp_in->addr_c1 =
-				(void *)((unsigned long)rpf->buf_addr[2]
-						      + rpf->offsets[1]);
+	} else {
+		rpf->offsets[1] = 0;
 	}
+
+	vsp_in->addr = (void *)((unsigned long)rpf->buf_addr[0]
+					     + rpf->offsets[0]);
+	vsp_in->addr_c0 = (void *)((unsigned long)rpf->buf_addr[1]
+						 + rpf->offsets[1]);
+	vsp_in->addr_c1 = (void *)((unsigned long)rpf->buf_addr[2]
+						 + rpf->offsets[1]);
 
 	vsp_in->stride		= stride_y;
 	vsp_in->stride_c	= stride_c;
@@ -252,6 +252,11 @@ static int rpf_s_stream(struct v4l2_subdev *subdev, int enable)
 	vsp_in->pwd		= VSP_LAYER_CHILD;
 	vsp_in->vir		= VSP_NO_VIR;
 	vsp_in->vircolor	= 0;
+
+	vsp_in->alpha_blend->afix = rpf->alpha;
+
+	pipe = to_vsp2_pipeline(&rpf->entity.subdev.entity);
+	vsp2_pipeline_propagate_alpha(pipe, &rpf->entity, rpf->alpha);
 
 	vsp_in->alpha_blend->addr_a = NULL;
 	vsp_in->alpha_blend->alphan = VSP_ALPHA_NO;
@@ -324,14 +329,10 @@ static void rpf_vdev_queue(struct vsp2_video *video,
 		return;
 
 	vsp_in->addr = (void *)((unsigned long)buf->addr[0] + rpf->offsets[0]);
-	if (buf->buf.num_planes > 1) {
-		vsp_in->addr_c0 =
-			(void *)((unsigned long)buf->addr[1] + rpf->offsets[1]);
-	}
-	if (buf->buf.num_planes > 2) {
-		vsp_in->addr_c1 =
-			(void *)((unsigned long)buf->addr[2] + rpf->offsets[1]);
-	}
+	vsp_in->addr_c0 =
+		(void *)((unsigned long)buf->addr[1] + rpf->offsets[1]);
+	vsp_in->addr_c1 =
+		(void *)((unsigned long)buf->addr[2] + rpf->offsets[1]);
 }
 
 static const struct vsp2_video_operations rpf_vdev_ops = {

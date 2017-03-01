@@ -83,6 +83,8 @@ struct vsp2_bru {
 		struct vsp2_rwpf *rpf;
 		struct v4l2_rect compose;
 	} inputs[4];
+
+	u32 bgcolor;
 };
 
 static inline struct vsp2_bru *to_bru(struct v4l2_subdev *subdev)

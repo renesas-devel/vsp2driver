@@ -89,6 +89,7 @@ static int wpf_s_ctrl(struct v4l2_ctrl *ctrl)
 	switch (ctrl->id) {
 	case V4L2_CID_ALPHA_COMPONENT:
 		vsp_out->pad = ctrl->val;
+		wpf->alpha = ctrl->val;
 		break;
 	}
 
@@ -141,6 +142,10 @@ static int wpf_s_stream(struct v4l2_subdev *subdev, int enable)
 	vsp_out->x_coffset	= crop->left;
 	vsp_out->y_coffset	= crop->top;
 
+	vsp_out->addr = (void *)((unsigned long)wpf->buf_addr[0]);
+	vsp_out->addr_c0 = (void *)((unsigned long)wpf->buf_addr[1]);
+	vsp_out->addr_c1 = (void *)((unsigned long)wpf->buf_addr[2]);
+
 	/* Format */
 	outfmt = fmtinfo->hwfmt << VI6_WPF_OUTFMT_WRFMT_SHIFT;
 
@@ -176,6 +181,8 @@ static int wpf_s_stream(struct v4l2_subdev *subdev, int enable)
 	vsp_out->iturbt		= (outfmt & (3 << 10)) >> 10;
 	vsp_out->dith		= (outfmt & (3 << 12)) >> 12;
 	vsp_out->pxa		= (outfmt & (1 << 23)) >> 23;
+
+	vsp_out->pad = wpf->alpha;
 
 	vsp_out->cbrm		= VSP_CSC_ROUND_DOWN;
 	vsp_out->abrm		= VSP_CONVERSION_ROUNDDOWN;
@@ -221,12 +228,14 @@ static void wpf_vdev_queue(struct vsp2_video *video,
 	VSPM_VSP_PAR *vsp_par =
 		wpf->entity.vsp2->vspm->ip_par.unionIpParam.ptVsp;
 	T_VSP_OUT *vsp_out = vsp_par->dst_par;
+	unsigned int i;
+
+	for (i = 0; i < 3; ++i)
+		wpf->buf_addr[i] = buf->addr[i];
 
 	vsp_out->addr = (void *)((unsigned long)buf->addr[0]);
-	if (buf->buf.num_planes > 1)
-		vsp_out->addr_c0 = (void *)((unsigned long)buf->addr[1]);
-	if (buf->buf.num_planes > 2)
-		vsp_out->addr_c1 = (void *)((unsigned long)buf->addr[2]);
+	vsp_out->addr_c0 = (void *)((unsigned long)buf->addr[1]);
+	vsp_out->addr_c1 = (void *)((unsigned long)buf->addr[2]);
 }
 
 static const struct vsp2_video_operations wpf_vdev_ops = {

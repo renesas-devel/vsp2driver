@@ -870,6 +870,11 @@ static int vsp2_video_buffer_prepare(struct vb2_buffer *vb)
 			return -EINVAL;
 	}
 
+	for ( ; i < 3; ++i) {
+		buf->addr[i] = 0;
+		buf->length[i] = 0;
+	}
+
 	return 0;
 }
 

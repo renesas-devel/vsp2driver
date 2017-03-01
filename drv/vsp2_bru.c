@@ -91,6 +91,7 @@ static int bru_s_ctrl(struct v4l2_ctrl *ctrl)
 	case V4L2_CID_BG_COLOR:
 		vsp_bru->blend_virtual->color =
 			ctrl->val | (0xff << VI6_BRU_VIRRPF_COL_A_SHIFT);
+		bru->bgcolor = ctrl->val;
 		break;
 	}
 
@@ -155,6 +156,8 @@ static int bru_s_stream(struct v4l2_subdev *subdev, int enable)
 	vsp_bru->blend_virtual->x_position	= 0;
 	vsp_bru->blend_virtual->y_position	= 0;
 	vsp_bru->blend_virtual->pwd		= VSP_LAYER_PARENT;
+	vsp_bru->blend_virtual->color =
+		bru->bgcolor | (0xff << VI6_BRU_VIRRPF_COL_A_SHIFT);
 
 	/* Route BRU input 1 as SRC input to the ROP unit and configure the ROP
 	 * unit with a NOP operation to make BRU input 1 available as the
