@@ -149,6 +149,8 @@ static int rpf_s_stream(struct v4l2_subdev *subdev, int enable)
 	u32 stride_y = 0;
 	u32 stride_c = 0;
 	u32 height = 0;
+	VSPM_VSP_PAR *vsp_par =
+		rpf->entity.vsp2->vspm->ip_par.unionIpParam.ptVsp;
 	T_VSP_IN *vsp_in = rpf_get_vsp_in(rpf);
 	u16 vspm_format;
 
@@ -270,7 +272,8 @@ static int rpf_s_stream(struct v4l2_subdev *subdev, int enable)
 	vsp_in->alpha_blend->mscolor1 = 0;
 
 	/* Count rpf_num. */
-	rpf->entity.vsp2->vspm->ip_par.unionIpParam.ptVsp->rpf_num++;
+	if (vsp_par->rpf_num < rpf->entity.index + 1)
+		vsp_par->rpf_num = rpf->entity.index + 1;
 
 	return 0;
 }
